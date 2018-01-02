@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">AgendaJava</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_main2">Atividades Registradas</string>
+    <string name="title_activity_anotacoes_detalhes">AnotacoesDetalhes</string>
+    <string name="title_activity_anotacoes_afim">Anotacoes A fim</string>
+    <string name="title_activity_listar_comentarios">Listar Comentários</string>
+    <string name="title_activity_relacionar_imagenes">Fotografar</string>
+
+
+    <string name="title_item_list">Registros Gráficos</string>
+    <string name="title_item_detail">Detalhes</string>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/atividades_registradas"
+        android:title="ver atividades registradas"
+        />
+    <item android:id="@+id/atividades_faltantes"
+        android:title="ver atividades faltantes"
+        />
+
+<!--Dezembro 18 -->
+    <item android:id="@+id/nova_atividade"
+        android:title="cadastrar nova atividade"
+        />
+<!--Dezembro 21 -->
+    <item android:id="@+id/ver_comentarios"
+        android:title="ver comentários"
+        />
+<!--Dezembro 22 -->
+    <item android:id="@+id/ver_imagenes"
+        android:title="ver imagenes"
+        />
+</menu>

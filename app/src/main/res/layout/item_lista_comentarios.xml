@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_height="wrap_content" android:orientation="vertical"
+android:layout_width="fill_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/numeracao_text_view"
+        android:gravity="left"
+        />
+
+    <Button
+        android:layout_toRightOf="@id/numeracao_text_view"
+        android:id="@+id/operacoes_button"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Comentario"
+        android:visibility="visible"
+        android:onClick="operacoes_cada_item"
+        />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/comentario_text_view"
+            android:layout_toRightOf="@id/operacoes_button"
+            android:typeface="monospace"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/atividade_text_view"
+            android:layout_toRightOf="@id/operacoes_button"
+            android:layout_below="@id/comentario_text_view"
+            />
+        <TextView
+            android:id="@+id/hora_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_below="@id/atividade_text_view"
+            android:layout_toRightOf="@id/operacoes_button"
+            android:layout_weight="1"
+            android:typeface="monospace"
+            />
+</RelativeLayout>

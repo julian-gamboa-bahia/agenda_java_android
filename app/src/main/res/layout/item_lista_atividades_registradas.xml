@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_height="wrap_content" android:orientation="vertical"
+android:layout_width="fill_parent">
+
+<TableRow android:layout_width="fill_parent"
+    android:id="@+id/TableRow01"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/numeracao_text_view"
+        android:gravity="left"
+        />
+
+
+    <Button
+        android:id="@+id/operacoes_button"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Registrados"
+        android:visibility="visible"
+        android:onClick="operacoes_cada_item"
+        />
+
+    <TextView
+        android:id="@+id/atividade_text_view"
+        android:gravity="left"
+        android:layout_weight="1"
+        android:typeface="monospace"
+        android:onClick="operacoes_cada_informacao_pre_item"
+        />
+    <TextView
+        android:id="@+id/hora_text_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:gravity="right"
+        android:layout_weight="1"
+        android:typeface="monospace"
+        />
+</TableRow>
+
+</TableLayout>
