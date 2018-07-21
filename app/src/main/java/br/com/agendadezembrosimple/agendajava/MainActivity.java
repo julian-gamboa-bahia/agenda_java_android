@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
@@ -17,8 +20,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,6 +32,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,8 +48,10 @@ import br.com.agendadezembrosimple.agendajava.adapters.Lista_Atividades_Adapter;
 import br.com.agendadezembrosimple.agendajava.comentarios.listar_comentarios_funcoes;
 import br.com.agendadezembrosimple.agendajava.espelharDB.Servidor_DB_registro_NOVA_atividades;
 import br.com.agendadezembrosimple.agendajava.espelharDB.Servidor_TABELA_comentario;
+import br.com.agendadezembrosimple.agendajava.espelharDB.TASK_inserir_atividades_desde_servidor;
 import br.com.agendadezembrosimple.agendajava.fotografar.RelacionarImagem;
 import br.com.agendadezembrosimple.agendajava.imagenes.ItemListActivity;
+import br.com.agendadezembrosimple.agendajava.xadrez.TASK_autorizar_jogo;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
     final int LER_BARCODE_CASE_CASE=5;
     String FINALIZAR_ATIVIDADE = "Finalizar";
     final int FINALIZAR_ATIVIDADE_CASE=6;
+    String AUTORIZAR_COMPUTADOR = "Autorizar no computador";
+    final int AUTORIZAR_COMPUTADOR_CASE=7;
 
     String temporizar_tarefa = "Sem tarefa temporizada";
 
@@ -76,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MENU_ESQUERDO_NOVA_ATIVIDADE = R.id.nova_atividade;
     private static final int MENU_ESQUERDO_VER_COMENTARIOS = R.id.ver_comentarios;
     private static final int MENU_ESQUERDO_VER_IMAGENES = R.id.ver_imagenes;
+    private static final int MENU_ESQUERDO_TELA = R.id.takeScreenshot;
 
 //Funções especiais
 
@@ -84,8 +96,10 @@ public class MainActivity extends AppCompatActivity {
     String VER_MAIS_FREQUENTES=" Ver mais frequentes";
 
     //Cronometro
-    long startTime;
     long countUp;
+    //Gravador
+    public boolean gravando_geral=false;
+    public String nomeAudio="";
 
     String[] lista_tarefas = {
             "Lavar Pratos",
@@ -136,11 +150,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // remove title
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
+//Antes de preparar a lista será necesario colocar no DB aquelas
+// ATIVIDADES que estejam no SERVIDOR e que não estejam aqui
+        inserir_atividades_desde_Servidor();
         preparar_lista();
     }
 
@@ -179,7 +201,8 @@ public class MainActivity extends AppCompatActivity {
                         ItemListActivity.class);
                 startActivity(intent);
                 return true;
-
+            case MENU_ESQUERDO_TELA:
+                takeScreenshot();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -198,14 +221,20 @@ public class MainActivity extends AppCompatActivity {
 
         hora = obter_dia() + "  " + hora;
         DB_registro_atividades db_registro_atividades = new DB_registro_atividades(getBaseContext());
-        //db_registro_atividades.numberOfRows();
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
         db_registro_atividades.inserir_inicio(
                 atividades,
                 hora,
                 foto,
                 atividade_passada,
                 barcode,
-                "0"
+                "0",
+                day,
+                month,
+                year
         );
         //Dezembro26
         String url = Config.Servidor_DB_registro_atividades + "?atividade=" + atividades + "&hora_celular=" + hora;
@@ -353,7 +382,8 @@ public class MainActivity extends AppCompatActivity {
                 ELIMINAR_ATIVIDADE,
                 FOTOGRAFAR,
                 LER_BARCODE,
-                FINALIZAR_ATIVIDADE
+                FINALIZAR_ATIVIDADE,
+                AUTORIZAR_COMPUTADOR
         };
 
 
@@ -372,8 +402,6 @@ public class MainActivity extends AppCompatActivity {
                 // TODO Auto-generated method stub
             }
         });
-
-        startTime = SystemClock.elapsedRealtime();
 
         final TextView tempos = (TextView) findViewById(R.id.tempos);
 //Ativamos o cronometro:
@@ -463,6 +491,14 @@ public class MainActivity extends AppCompatActivity {
                                                 "foto",
                                                 "atividade_passada",
                                                 "barcode");
+                                        break;
+                                    case AUTORIZAR_COMPUTADOR_CASE:
+//Autorizamos no servidor que o jogo de Xadrez seja registrado
+                                        if(atividade.toLowerCase().contains("xadrez"))
+                                        {
+                                            new TASK_autorizar_jogo(getBaseContext()).execute(Config.autorizar_jogo);
+                                            Toast.makeText(getBaseContext(),"Xadrez Habilitado",Toast.LENGTH_LONG).show();
+                                        }
                                         break;
                                 }
 
@@ -578,6 +614,8 @@ public class MainActivity extends AppCompatActivity {
 
     //Dezembro29
     public void takeScreenshot() {
+
+        Toast.makeText(getBaseContext(),"Capturando Tela",Toast.LENGTH_LONG).show();
         Date now = new Date();
         android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
 
@@ -844,5 +882,97 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-///////////////////////
+//janeiro03
+    public void inserir_atividades_desde_Servidor()
+    {
+        new TASK_inserir_atividades_desde_servidor(getBaseContext()).execute(Config.TASK_inserir_atividades_desde_servidor);
+    }
+
+//janeiro07
+    public void gravar_cada_item(View v)
+    {
+        Object[] itemToExpandir = (Object[]) v.getTag();
+
+        String atividade = (String) itemToExpandir[0];
+        ImageButton botao_gravar = (ImageButton) itemToExpandir[1];
+        boolean gravando = (boolean) itemToExpandir[2];
+
+        if(!gravando_geral) //se não estiver gravando ele se importa em ativar o gravador
+        {
+            if (!gravando)
+            {
+                nomeAudio=atividade+"_"+System.currentTimeMillis();
+                botao_gravar.setImageResource(R.drawable.parar);
+                Toast.makeText(getBaseContext(),"Parar"+nomeAudio,Toast.LENGTH_LONG).show();
+                //começa gravar
+                startRecording();
+            }
+            else
+            {
+                botao_gravar.setImageResource(R.drawable.gravar);
+            }
+            gravando_geral=true;
+        }
+        else
+        {
+            //parar audio
+            stopRecording();
+            //reproduzir
+            startPlaying();
+            gravando_geral=false;
+            botao_gravar.setImageResource(R.drawable.gravar);
+        }
+    }
+//janeiro08
+private MediaRecorder mRecorder = null;
+    private MediaPlayer mPlayer = null;
+
+    private static String mFileName = null;
+
+    private void startRecording() {
+        mRecorder = new MediaRecorder();
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        // Record to the external cache directory for visibility
+        mFileName = getExternalCacheDir().getAbsolutePath();
+        mFileName += "/"+nomeAudio+".3gp";
+
+        mRecorder.setOutputFile(mFileName);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            mRecorder.prepare();
+        } catch (IOException e) {
+            Log.e("Janeiro08", "prepare() failed");
+        }
+
+        mRecorder.start();
+    }
+
+    private void stopRecording() {
+        mRecorder.stop();
+        mRecorder.release();
+        mRecorder = null;
+    }
+/*
+Play
+*/
+
+    private void startPlaying() {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(mFileName);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e("Janeiro08", "prepare() failed");
+        }
+    }
+
+    private void stopPlaying() {
+        mPlayer.release();
+        mPlayer = null;
+    }
+
+// ///////////
 }

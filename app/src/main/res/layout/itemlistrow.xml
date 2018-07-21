@@ -23,6 +23,15 @@ android:layout_width="fill_parent">
         android:onClick="operacoes_cada_item"
         />
 
+    <ImageButton
+        android:id="@+id/gravar"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        android:src="@drawable/gravar"
+        android:onClick="gravar_cada_item"
+        />
+
     <TextView
         android:id="@+id/atividade_text_view"
         android:gravity="left"

@@ -26,7 +26,9 @@ import br.com.agendadezembrosimple.agendajava.R;
 import br.com.agendadezembrosimple.agendajava.adapters.Atividades;
 import br.com.agendadezembrosimple.agendajava.adapters.Lista_Atividades_Adapter;
 import br.com.agendadezembrosimple.agendajava.adapters.Lista_Atividades_Registradas_Adapter;
+import br.com.agendadezembrosimple.agendajava.comentarios.listar_comentarios_funcoes;
 import br.com.agendadezembrosimple.agendajava.espelharDB.Servidor_DB_registro_NOVA_atividades;
+import br.com.agendadezembrosimple.agendajava.espelharDB.Servidor_TABELA_comentario;
 import br.com.agendadezembrosimple.agendajava.listar_Atividades_afim;
 
 public class listar_Atividades_registradas_funcoes extends AppCompatActivity {
@@ -140,18 +142,17 @@ void janela_esconder(
                             switch (i)
                             {
                                 case AGRUPAR_CASE:
-//Marcar como esconder
-                                    DB_registro_atividades db_registro_atividades = new DB_registro_atividades(activity);
-                                    if(escondido)
-                                    {
-                                        db_registro_atividades.desmarcar_esconder_por_position(position);
-                                    }
-                                    else
-                                    {
-                                        db_registro_atividades.esconder_por_position(position);
-                                    }
+//Janeiro04
+//Vemos justamente aqueles que estejam
+                                        filtrar(atividade);
                                     break;
                                 case AGREGAR_COMENTARIO_CASE:
+                                    agora = obter_dia() + " " + agora;
+                                    janela_comentario(
+                                            agora,
+                                            "0",
+                                            atividade
+                                    );
                                     break;
                                 case FINALIZAR_CASE:
                                     preparar_DB(
@@ -163,7 +164,6 @@ void janela_esconder(
                                     break;
                             }
 
-                            Log.d("Dezembro18","janela_definir_desconto\n"+str[i]);
                         }
                     }
                 }
@@ -194,14 +194,20 @@ void janela_esconder(
 
         hora = obter_dia() + "  " + hora;
         DB_registro_atividades db_registro_atividades = new DB_registro_atividades(getBaseContext());
-        //db_registro_atividades.numberOfRows();
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
         db_registro_atividades.inserir_inicio(
                 atividades,
                 hora,
                 foto,
                 atividade_passada,
                 barcode,
-                "0"
+                "0",
+                day,
+                month,
+                year
         );
         //Dezembro26
         String url = Config.Servidor_DB_registro_atividades + "?atividade=" + atividades + "&hora_celular=" + hora;
@@ -360,5 +366,56 @@ public void filtrar_Objetos_Atividades()
         simpleListView.setAdapter(customAdapter);
     }
 
-/// / ///////////
+//janeiro04
+    //FAZER_COMENTARIO
+    public void janela_comentario(
+            final String agora,
+            final String esconder,
+            final String atividade
+
+    ) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Fazer coméntario");
+        final Activity activity = this;
+
+// Set up the input
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("Comentar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String comentario = input.getText().toString();
+
+                DB_registro_atividades db_registro_atividades = new DB_registro_atividades(getBaseContext());
+                db_registro_atividades.inserir_comentario(
+                        comentario,
+                        agora,
+                        esconder,
+                        atividade
+                );
+//espelahando
+                String url = Config.Servidor_TABELA_comentario + "?atividade=" + atividade
+                        + "&hora_celular=" + agora
+                        + "&comentario=" + comentario;
+
+                new Servidor_TABELA_comentario().execute(url);
+
+                Intent listar_comentarios = new Intent(activity,
+                        listar_comentarios_funcoes.class);
+                listar_comentarios.putExtra("procurar", atividade);
+                startActivity(listar_comentarios);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+///////////////
 }

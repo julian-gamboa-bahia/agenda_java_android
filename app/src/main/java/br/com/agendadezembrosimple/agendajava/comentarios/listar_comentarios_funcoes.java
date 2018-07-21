@@ -85,6 +85,7 @@ public class listar_comentarios_funcoes extends AppCompatActivity {
 
     }
 //Dezembro17
+//Janeiro02
 void janela_agrupar_por_atividade(
         final String atividade,
         final Activity activity,
@@ -98,8 +99,13 @@ void janela_agrupar_por_atividade(
     };
 
     final AlertDialog.Builder builderDialog = new AlertDialog.Builder(activity);
+
+
+    DB_registro_atividades db_registro_atividades = new DB_registro_atividades(getBaseContext());
+
+    Integer numero_comentarios=db_registro_atividades.numero_comentarios();
     //TITULO
-    builderDialog.setTitle("Ações");
+    builderDialog.setTitle("Comentários ("+numero_comentarios+")");
 
     int count = str.length;
 
@@ -140,7 +146,6 @@ void janela_agrupar_por_atividade(
 //Deixando apenas aquelas que tenha aquela atividade
 //                                    Log.d("Dezembro21","atividade\n"+atividade);
 
-
                                     preparar_lista();
                                     break;
                                 case AGREGAR_COMENTARIO_CASE:
@@ -160,7 +165,6 @@ void janela_agrupar_por_atividade(
                                     break;
                             }
 
-                            Log.d("Dezembro18","janela_definir_desconto\n"+str[i]);
                         }
                     }
                 }
@@ -233,14 +237,22 @@ public void janela_comentario(
 
         hora = obter_dia() + "  " + hora;
         DB_registro_atividades db_registro_atividades = new DB_registro_atividades(getBaseContext());
-        //db_registro_atividades.numberOfRows();
+
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+
         db_registro_atividades.inserir_inicio(
                 atividades,
                 hora,
                 foto,
                 atividade_passada,
                 barcode,
-                "0"
+                "0",
+                day,
+                month,
+                year
         );
         //Dezembro26
         String url = Config.Servidor_DB_registro_atividades + "?atividade=" + atividades + "&hora_celular=" + hora;
@@ -300,5 +312,19 @@ public void janela_comentario(
 
         simpleListView.setAdapter(customAdapter);
     }
-//////////////////
+//Janeiro02
+
+    public void botao_comentario(View v)
+    {
+        Object[] itemToExpandir = (Object[]) v.getTag();
+
+        String atividade = (String) itemToExpandir[0];
+
+        janela_agrupar_por_atividade(
+                atividade,
+                this,
+                true
+        );
+    }
+// //////
 }

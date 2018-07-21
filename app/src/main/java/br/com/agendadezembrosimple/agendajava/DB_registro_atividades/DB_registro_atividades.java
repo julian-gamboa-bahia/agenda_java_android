@@ -12,6 +12,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.IntegerRes;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,8 +38,12 @@ public class DB_registro_atividades extends SQLiteOpenHelper {
     private static final String ATIVIDADES_atividade_passada = "atividade_passada";
     private static final String ATIVIDADES_barcode = "barcode";
     private static final String ATIVIDADES_esconder = "esconder";
+    //calendario, para poder esconder aquelas antigas
+    private static final String ATIVIDADES_dia = "dia";
+    private static final String ATIVIDADES_mes = "mes";
+    private static final String ATIVIDADES_ano = "ano";
 
-// Tabela 2 : registro de tarefas
+// Tabela 2 : Cadastro de tarefas
 
     private static final String TABELA_NOVAS_atividades = "novas_atividades";
     private static final String NOVAS_ATIVIDADES_indice = "indice";
@@ -45,6 +51,7 @@ public class DB_registro_atividades extends SQLiteOpenHelper {
     private static final String NOVAS_ATIVIDADES_hora = "hora";
     private static final String NOVAS_ATIVIDADES_foto = "foto";
     private static final String NOVAS_ATIVIDADES_esconder = "esconder";
+
 
 // Tabela 3 : comentarios de cada tarefa
 
@@ -74,7 +81,10 @@ public class DB_registro_atividades extends SQLiteOpenHelper {
                 + ATIVIDADES_foto + " text,"
                 + ATIVIDADES_atividade_passada + " text,"
                 + ATIVIDADES_barcode + " text,"
-                + ATIVIDADES_esconder + " text"
+                + ATIVIDADES_esconder + " text,"
+                + ATIVIDADES_dia + " text,"
+                + ATIVIDADES_mes + " text,"
+                + ATIVIDADES_ano + " text"
                 +")";
         db.execSQL(sql);
 
@@ -112,7 +122,10 @@ public class DB_registro_atividades extends SQLiteOpenHelper {
         String foto,
         String atividade_passada,
         String barcode,
-        String esconder
+        String esconder,
+        Integer dia,
+        Integer mes,
+        Integer ano
         )
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -124,6 +137,12 @@ public class DB_registro_atividades extends SQLiteOpenHelper {
         values.put(ATIVIDADES_atividade_passada,atividade_passada);
         values.put(ATIVIDADES_barcode,barcode);
         values.put(ATIVIDADES_esconder,esconder);
+
+        values.put(ATIVIDADES_dia,dia);
+        values.put(ATIVIDADES_mes,mes);
+        values.put(ATIVIDADES_ano,ano);
+
+        Log.d("Janeiro06","inserir_inicio\n"+dia+"\n"+mes+"\n"+ano+"\n");
 
         db.insert(TABELA_atividades, null, values);
         db.close();
@@ -296,6 +315,14 @@ public void cadastrar_nova_atividade(
     public int numberOfRows(){
         SQLiteDatabase db = this.getReadableDatabase();
         int numRows = (int) DatabaseUtils.queryNumEntries(db, TABELA_atividades);
+        return numRows;
+    }
+
+    ///Dezembro 19
+
+    public int numero_comentarios(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        int numRows = (int) DatabaseUtils.queryNumEntries(db, TABELA_COMENTARIOS_atividades);
         return numRows;
     }
 
@@ -517,5 +544,28 @@ public List<Comentarios>  listar_comentarios_Objetos()
     return Objetos_Comentarios;
 }
 
-/// / /////
+//Janeiro03
+    public boolean conferir_ja_registrado(String atividade)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query="select "+
+                NOVAS_ATIVIDADES_atividades
+                +" from "+TABELA_NOVAS_atividades+" where "+NOVAS_ATIVIDADES_atividades+" like '%" +
+                atividade+
+                "%'";
+
+        Cursor res =  db.rawQuery(query, null);
+
+        if(res.getCount() <= 0){
+            res.close();
+            return false;
+        }
+        res.close();
+        return true;
+    }
+
+
+
+// / / /////
 }

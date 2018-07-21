@@ -17,7 +17,7 @@ android:layout_width="fill_parent">
         android:layout_width="wrap_content"
         android:text="Comentario"
         android:visibility="visible"
-        android:onClick="operacoes_cada_item"
+        android:onClick="botao_comentario"
         />
 
         <TextView
